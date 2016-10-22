@@ -3,15 +3,20 @@ using System.Drawing;
 
 namespace Snake_game {
     public class Snake {
+        #region Variables
         private Point _head;
         private readonly List<Point> _body;
+        #endregion
 
+        #region Constructor
         public Snake(Point headPoint, Constants.Direction direction) {
             HeadPoint = headPoint;
             _body = new List<Point>();
             GenerateBody(direction);
         }
+        #endregion
 
+        #region Methods
         private void GenerateBody(Constants.Direction direction) {
             switch (direction) {
                     case Constants.Direction.Left:
@@ -36,8 +41,11 @@ namespace Snake_game {
                     break;
             }
         }
+        public void UpdateSnake(bool[,] map = null) {
+            if (map != null)
+                try { map[TailTile.X, TailTile.Y] = false; } 
+                catch { /* ignored */}
 
-        public void UpdateSnake() {
             Point tmp1 = HeadPoint;
             switch (MovingDirection) {
                     case Constants.Direction.Left:
@@ -63,7 +71,6 @@ namespace Snake_game {
                 tmp1 = tmp2;
             }
         }
-
         public void LengthenBody(int value) {
             while (value-- > 0)
                 switch (MovingDirection) {
@@ -84,17 +91,57 @@ namespace Snake_game {
                         break;
                 }
         }
-
         public void Dispose() {
             _body.Clear();
         }
+        #endregion
 
+        #region Properties
         public Point HeadPoint {
             get { return _head; }
             set { _head = value; }
         }
-        public Point[] BodyPoints => _body.ToArray();
-        public Point TailPoint => BodyPoints.Length > 0 ? BodyPoints[BodyPoints.Length - 1] : HeadPoint;
+        public Point HeadTile {
+            get { return new Point(HeadPoint.X / Constants.CELL_WIDTH, HeadPoint.Y / Constants.CELL_HEIGHT);}
+            set { HeadPoint = new Point(value.X * Constants.CELL_WIDTH, value.Y * Constants.CELL_HEIGHT);}
+        }
+        public Point[] BodyPoints {
+            get { return _body.ToArray(); }
+            set {
+                _body.Clear();
+                _body.AddRange(value);
+            }
+        }
+        public Point[] BodyTiles {
+            get {
+                Point[] body = BodyPoints;
+                System.Array.ForEach(body, point => {
+                                               point.X /= Constants.CELL_WIDTH;
+                                               point.Y /= Constants.CELL_HEIGHT;
+                                           });
+                return body;
+            }
+            set {
+                Point[] body = value;
+                System.Array.ForEach(body, point => {
+                    point.X *= Constants.CELL_WIDTH;
+                    point.Y *= Constants.CELL_HEIGHT;
+                });
+                BodyPoints = body;
+            }
+        }
+        public Point TailPoint {
+            get { return BodyPoints.Length > 0 ? BodyPoints[BodyPoints.Length - 1] : HeadPoint; }
+            set {
+                if (BodyPoints.Length > 0) _body[BodyPoints.Length - 1] = value;
+                else HeadPoint = value;
+            }
+        }
+        public Point TailTile {
+            get { return new Point(TailPoint.X / Constants.CELL_WIDTH, TailPoint.Y / Constants.CELL_HEIGHT); }
+            set { TailPoint = new Point(value.X * Constants.CELL_WIDTH, value.Y * Constants.CELL_HEIGHT); }
+        }
         public Constants.Direction MovingDirection { get; set; } = Constants.DEFAULT_SNAKE_DIRECTION;
+        #endregion
     }
 }

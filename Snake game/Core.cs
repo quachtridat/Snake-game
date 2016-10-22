@@ -30,11 +30,11 @@ namespace Snake_game {
 
         #region Properties
         public PictureBox Playfield { get; }
+        private bool[,] Map { get; set; }
         public Snake Snake { get; private set; }
         private Timer Timer { get; } = new Timer();
         public Point CurrentFoodPoint { get; private set; }
         public int CurrentScore { get; private set; }
-
         internal ChangeDirectionLabelDelegate ChangeDirectionLabel { get; set; }
         internal ChangeCurrentScoreDelegate ChangeScore { get; set; }
         #endregion
@@ -48,6 +48,7 @@ namespace Snake_game {
 
             SetLocalColors();
             SetLocalBrushes();
+            GenerateMap();
         }
         private void SetLocalColors() {
             _cellColor = Color.FromArgb(CELL_COLOR_R, CELL_COLOR_G, CELL_COLOR_B);
@@ -61,35 +62,40 @@ namespace Snake_game {
             _snakeBodyBrush = new SolidBrush(_snakeBodyColor);
             _foodBrush = new SolidBrush(_foodColor);
         }
+        private void GenerateMap() {
+            Map = new bool[_width / CELL_WIDTH, _height / CELL_HEIGHT];
+        }
         #endregion
 
         #region Methods
         public void Start() {
+            // Add canvas updater
             Playfield.Paint += Update;
+            // Start timer
             Timer.Start();
-            GenerateFood();   
+            // Generate food
+            GenerateFood();
         }
-
         public void Update(object sender, PaintEventArgs e) {
-            // Delete tail point          
-            Point tail = Snake.TailPoint;
-            e.Graphics.FillRectangle(_cellBrush, tail.X, tail.Y, CELL_WIDTH, CELL_HEIGHT);
+            // Update snake
+            Snake.UpdateSnake(Map);
 
-            Snake.UpdateSnake();
-
-            // Fix out of range (when the snake is out of canvas)
+            // Fix out of range (when the snake's head is out of play-field)
             FixOutOfRange();
-
-            // Check self-bitten (lose condition)
-            if (IsSelfBitten()) {
-                e.Graphics.FillRectangle(_cellBrush, Playfield.DisplayRectangle);
-                Lose();
-                return;
-            }
 
             // Set & set color for head point
             Point head = Snake.HeadPoint;
             e.Graphics.FillRectangle(_snakeHeadBrush, head.X, head.Y, CELL_WIDTH, CELL_HEIGHT);
+
+            // Check self-bitten (lose condition)
+            if (IsSnakeBody(Snake.HeadPoint)) {
+                Lose();
+                e.Graphics.FillRectangle(_cellBrush, Playfield.DisplayRectangle);
+                return;
+            }
+
+            // Set true to head's point on the map
+            Map[Snake.HeadTile.X, Snake.HeadTile.Y] = true;
 
             // Set & set color for body points
             foreach (Point bodyPoint in Snake.BodyPoints)
@@ -112,19 +118,26 @@ namespace Snake_game {
                 ChangeScore?.Invoke(CurrentScore);
             }
         }
-
         private void Lose() {
+            // Stop timer
             Timer.Stop();
+            // Show message
             if (MessageBox.Show(@"GAME OVER!") == DialogResult.OK) {}
+            // Disable canvas updater
             Playfield.Paint -= Update;
+            // Destruct the snake
             Snake.Dispose();
+            // Delete the snake
             Snake = null;
+            // Reset score
             CurrentScore = 0;
+            // Reset region
             _width = _height = 0;
+            // Reset score label (main form)
             ChangeScore(0);
+            // Reset direction label (main form)
             ChangeDirectionLabel(Direction.None);
         }
-
         private void SetSnakeDirection() {
             switch (_keyPressed) {
                 case Keys.Left:
@@ -144,38 +157,36 @@ namespace Snake_game {
             _keyPressed = Keys.None;
             Playfield.Invalidate();
         }
-
+        /// <summary>
+        /// Relocate the snake when it goes out of the play-field.
+        /// </summary>
         private void FixOutOfRange() {
-            Point head = Snake.HeadPoint;
-            
-            if (head.X < 0 || head.Y < 0 || head.X >= _width || head.Y >= _height) {
-                Point fix = new Point(head.X, head.Y);
-                if (fix.X < 0) fix.X = _width - CELL_WIDTH * Math.Abs(fix.X / CELL_WIDTH);
-                else if (fix.Y < 0) fix.Y = _height - CELL_HEIGHT * Math.Abs(fix.Y / CELL_HEIGHT);
-                else if (fix.X >= _width) fix.X = (Math.Abs((fix.X - _width) / CELL_WIDTH) - 1) * CELL_WIDTH;
-                else if (fix.Y >= _height) fix.Y = (Math.Abs((fix.Y - _height) / CELL_HEIGHT) - 1) * CELL_HEIGHT;
-
+            Point fix = new Point(Snake.HeadPoint.X, Snake.HeadPoint.Y);
+            if (fix.X < 0 || fix.Y < 0 || fix.X >= _width || fix.Y >= _height) {
+                if (fix.X < 0) // Go beyond the left wall
+                    fix.X = _width - CELL_WIDTH * Math.Abs(fix.X / CELL_WIDTH);
+                else if (fix.Y < 0) // Go beyond the top wall
+                    fix.Y = _height - CELL_HEIGHT * Math.Abs(fix.Y / CELL_HEIGHT);
+                else if (fix.X >= _width) // Go beyond the right wall
+                    fix.X = (Math.Abs((fix.X - _width) / CELL_WIDTH) - 1) * CELL_WIDTH;
+                else if (fix.Y >= _height) // Go beyond the bottom wall
+                    fix.Y = (Math.Abs((fix.Y - _height) / CELL_HEIGHT) - 1) * CELL_HEIGHT;
                 Snake.HeadPoint = fix;
-                Snake.UpdateSnake();
+                Snake.UpdateSnake(Map);
             }
         }
-
         private void GenerateFood() {
             Random rnd = new Random();
+            int x, y;
 
-            int x = rnd.Next(_width / CELL_WIDTH);
-            int y = rnd.Next(_height/CELL_HEIGHT);
+            do {
+                x = rnd.Next(_width/CELL_WIDTH);
+                y = rnd.Next(_height/CELL_HEIGHT);
 
-            CurrentFoodPoint = new Point(x*CELL_WIDTH, y*CELL_HEIGHT);
+                CurrentFoodPoint = new Point(x*CELL_WIDTH, y*CELL_HEIGHT);
+            } while (IsSnakeBody(new Point(x, y))); 
         }
-
-        private bool IsSelfBitten() {
-            if (Snake.BodyPoints.Length < 4) return false;
-            foreach (Point bodyPoint in Snake.BodyPoints)
-                if (bodyPoint == Snake.HeadPoint) return true;
-            return false;
-        }
-
+        private bool IsSnakeBody(Point point) => Map[point.X / CELL_WIDTH, point.Y / CELL_HEIGHT];
         public void SetKeyInput(Keys key) {
             if (_keyPressed == Keys.None) _keyPressed = key;
         }

@@ -2,14 +2,14 @@
     public static class Constants {
         public enum Direction { None, Up, Down, Left, Right }
 
-        public const int UPDATE_INTERVAL = 100; // milliseconds
+        public const int UPDATE_INTERVAL = 50; // milliseconds
 
         #region Playfield
-        public const int PLAYFIELD_WIDTH = 60;
-        public const int PLAYFIELD_HEIGHT = 60;
+        public const int PLAYFIELD_WIDTH = 600;
+        public const int PLAYFIELD_HEIGHT = 600;
 
-        public const int CELL_WIDTH = 12;
-        public const int CELL_HEIGHT = 12;
+        public const int CELL_WIDTH = 15;
+        public const int CELL_HEIGHT = 15;
 
         public const int CELL_COLOR_R = 255;
         public const int CELL_COLOR_G = 255;
