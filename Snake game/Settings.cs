@@ -8,7 +8,7 @@ namespace Snake_game {
 
         public enum Direction { None, Up, Down, Left, Right }
 
-        public static int UpdateInterval = 5;
+        public static int UpdateInterval = 200;
         public static int MaxScore = 0;
 
         #region Playfield
@@ -64,6 +64,8 @@ namespace Snake_game {
         #region Event handlers
         private void Settings_Load(object sender, EventArgs e) {
             LoadGameSettings();
+            numDefSpawnX.Maximum = PLAYFIELD_WIDTH / (decimal) CellSize;
+            numDefSpawnY.Maximum = PLAYFIELD_HEIGHT / (decimal) CellSize;
         }
         private void radCustomSpeed_CheckedChanged(object sender, EventArgs e) {
             numSnakeSpeed.Visible = numSnakeSpeed.Enabled = ((RadioButton)sender).Checked;
@@ -262,8 +264,8 @@ namespace Snake_game {
         }
         private void SetDefaultSettings() {
             DefaultSnakeLength = (int)numDefSnakeLength.Value;
-            DefaultSnakeLocationX = (int) numDefSpawnX.Value;
-            DefaultSnakeLocationY = (int) numDefSpawnY.Value;
+            DefaultSnakeLocationX = ((int) numDefSpawnX.Value - 1) * CellSize;
+            DefaultSnakeLocationY = ((int) numDefSpawnY.Value - 1) * CellSize;
 
             switch ((string)cboxDefSnakeDir.SelectedItem) {
                 case @"Up": DefaultSnakeDirection = Direction.Up; break;

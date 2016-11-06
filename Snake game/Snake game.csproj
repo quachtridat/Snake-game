@@ -44,7 +44,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Array.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>

@@ -44,7 +44,10 @@ namespace Snake_game {
         #endregion
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e) {
-            if (_core?.Snake == null) new Settings().ShowDialog();
+            if (_core?.Snake == null) {
+                new Settings().ShowDialog();
+                picCanvas.BackColor = Color.FromArgb(CellColorR, CellColorG, CellColorB);
+            }
         }
     }
 }

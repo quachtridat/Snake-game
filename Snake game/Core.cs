@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using static Snake_game.Settings;
 
 namespace Snake_game {
+    using static Settings;
     internal class SnakeGameManager : IDisposable {
         #region Delegates
         public delegate void ChangeDirectionLabelDelegate(Direction dir);
@@ -85,19 +85,19 @@ namespace Snake_game {
             // Fix out of range (when the snake's head is out of play-field)
             FixOutOfRange();
 
-            // Set & set color for head point
-            Point head = Snake.HeadPoint;
-            e.Graphics.FillRectangle(_snakeHeadBrush, head.X, head.Y, CellSize, CellSize);
-
             // Set & set color for body points
             foreach (Point bodyPoint in Snake.BodyPoints)
                 e.Graphics.FillRectangle(_snakeBodyBrush, bodyPoint.X, bodyPoint.Y, CellSize, CellSize);
+
+            // Set & set color for head point
+            Point head = Snake.HeadPoint;
+            e.Graphics.FillRectangle(_snakeHeadBrush, head.X, head.Y, CellSize, CellSize);
 
             // Check self-bitten (lose condition)
             if (IsSnakeBody(Snake.HeadPoint)) {
                 e.Graphics.FillRectangle(_snakeHeadLoseBrush, head.X, head.Y, CellSize, CellSize);
                 GameOver(@"GAME OVER!");
-                e.Graphics.FillRectangle(_cellBrush, Playfield.DisplayRectangle);
+                ClearScreen(e.Graphics);
                 return;
             }
 
@@ -123,6 +123,7 @@ namespace Snake_game {
 
             if (MaxScore > 0 && CurrentScore >= MaxScore) {
                 GameOver(@"YOU WIN!");
+                ClearScreen(e.Graphics);
                 return;
             }
             if (Snake.BodyPoints.Length + 1 == (_width/CellSize)*(_height/CellSize)) GameOver(@"YOU WIN!");
@@ -201,6 +202,8 @@ namespace Snake_game {
         public void SetKeyInput(Keys key) {
             if (_keyPressed == Keys.None) _keyPressed = key;
         }
+
+        public void ClearScreen(Graphics g) => g?.FillRectangle(_cellBrush, Playfield.DisplayRectangle);
         public void Dispose() {
             _cellColor = _snakeHeadColor = _snakeBodyColor = _foodColor = _snakeHeadLoseColor = Color.Empty;
 
