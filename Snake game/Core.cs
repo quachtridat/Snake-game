@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using static Snake_game.Constants;
+using static Snake_game.Settings;
 
 namespace Snake_game {
-    internal class SnakeGameManager {
+    internal class SnakeGameManager : IDisposable {
         #region Delegates
         public delegate void ChangeDirectionLabelDelegate(Direction dir);
         public delegate void ChangeCurrentScoreDelegate(int score);
         #endregion
 
         #region Fields
-        private Color _cellColor, _snakeHeadColor, _snakeBodyColor, _foodColor;
-        private Brush _cellBrush, _snakeHeadBrush, _snakeBodyBrush, _foodBrush;
+        private Color _cellColor, _snakeHeadColor, _snakeBodyColor, _foodColor, _snakeHeadLoseColor;
+        private Brush _cellBrush, _snakeHeadBrush, _snakeBodyBrush, _foodBrush, _snakeHeadLoseBrush;
         private int _width, _height;
         private static Keys _keyPressed;
         #endregion
@@ -51,19 +51,21 @@ namespace Snake_game {
             GenerateMap();
         }
         private void SetLocalColors() {
-            _cellColor = Color.FromArgb(CELL_COLOR_R, CELL_COLOR_G, CELL_COLOR_B);
-            _snakeHeadColor = Color.FromArgb(SNAKE_HEAD_COLOR_R, SNAKE_HEAD_COLOR_G, SNAKE_BODY_COLOR_B);
-            _snakeBodyColor = Color.FromArgb(SNAKE_BODY_COLOR_R, SNAKE_BODY_COLOR_G, SNAKE_BODY_COLOR_B);
-            _foodColor = Color.FromArgb(FOOD_COLOR_R, FOOD_COLOR_G, FOOD_COLOR_B);
+            _cellColor = Color.FromArgb(CellColorR, CellColorG, CellColorB);
+            _snakeHeadColor = Color.FromArgb(SnakeHeadColorR, SnakeHeadColorG, SnakeBodyColorB);
+            _snakeBodyColor = Color.FromArgb(SnakeBodyColorR, SnakeBodyColorG, SnakeBodyColorB);
+            _foodColor = Color.FromArgb(FoodColorR, FoodColorG, FoodColorB);
+            _snakeHeadLoseColor = Color.FromArgb(SnakeHeadLoseColorR, SnakeHeadLoseColorG, SnakeHeadLoseColorB);
         }
         private void SetLocalBrushes() {
             _cellBrush = new SolidBrush(_cellColor);
             _snakeHeadBrush = new SolidBrush(_snakeHeadColor);
             _snakeBodyBrush = new SolidBrush(_snakeBodyColor);
             _foodBrush = new SolidBrush(_foodColor);
+            _snakeHeadLoseBrush = new SolidBrush(_snakeHeadLoseColor);
         }
         private void GenerateMap() {
-            Map = new bool[_width / CELL_WIDTH, _height / CELL_HEIGHT];
+            Map = new bool[_width / CellSize, _height / CellSize];
         }
         #endregion
 
@@ -85,11 +87,16 @@ namespace Snake_game {
 
             // Set & set color for head point
             Point head = Snake.HeadPoint;
-            e.Graphics.FillRectangle(_snakeHeadBrush, head.X, head.Y, CELL_WIDTH, CELL_HEIGHT);
+            e.Graphics.FillRectangle(_snakeHeadBrush, head.X, head.Y, CellSize, CellSize);
+
+            // Set & set color for body points
+            foreach (Point bodyPoint in Snake.BodyPoints)
+                e.Graphics.FillRectangle(_snakeBodyBrush, bodyPoint.X, bodyPoint.Y, CellSize, CellSize);
 
             // Check self-bitten (lose condition)
             if (IsSnakeBody(Snake.HeadPoint)) {
-                Lose();
+                e.Graphics.FillRectangle(_snakeHeadLoseBrush, head.X, head.Y, CellSize, CellSize);
+                GameOver(@"GAME OVER!");
                 e.Graphics.FillRectangle(_cellBrush, Playfield.DisplayRectangle);
                 return;
             }
@@ -97,35 +104,39 @@ namespace Snake_game {
             // Set true to head's point on the map
             Map[Snake.HeadTile.X, Snake.HeadTile.Y] = true;
 
-            // Set & set color for body points
-            foreach (Point bodyPoint in Snake.BodyPoints)
-                e.Graphics.FillRectangle(_snakeBodyBrush, bodyPoint.X, bodyPoint.Y, CELL_WIDTH, CELL_HEIGHT);
-
             // Set & set color for food point
-            e.Graphics.FillRectangle(_foodBrush, CurrentFoodPoint.X, CurrentFoodPoint.Y, CELL_WIDTH, CELL_HEIGHT);
+            e.Graphics.FillRectangle(_foodBrush, CurrentFoodPoint.X, CurrentFoodPoint.Y, CellSize, CellSize);
 
             // Check if food has been eaten
             if (head == CurrentFoodPoint) {
                 Snake.LengthenBody(1);
                 
                 FixOutOfRange();
-                e.Graphics.FillRectangle(_cellBrush, CurrentFoodPoint.X, CurrentFoodPoint.Y, CELL_WIDTH, CELL_HEIGHT);
+                e.Graphics.FillRectangle(_cellBrush, CurrentFoodPoint.X, CurrentFoodPoint.Y, CellSize, CellSize);
 
                 GenerateFood();
-                e.Graphics.FillRectangle(_foodBrush, CurrentFoodPoint.X, CurrentFoodPoint.Y, CELL_WIDTH, CELL_HEIGHT);
+                e.Graphics.FillRectangle(_foodBrush, CurrentFoodPoint.X, CurrentFoodPoint.Y, CellSize, CellSize);
 
-                CurrentScore++;
+                CurrentScore += FoodScore;
                 ChangeScore?.Invoke(CurrentScore);
             }
+
+            if (MaxScore > 0 && CurrentScore >= MaxScore) {
+                GameOver(@"YOU WIN!");
+                return;
+            }
+            if (Snake.BodyPoints.Length + 1 == (_width/CellSize)*(_height/CellSize)) GameOver(@"YOU WIN!");
         }
-        private void Lose() {
+        private void GameOver(string msg) {
             // Stop timer
             Timer.Stop();
             // Show message
-            if (MessageBox.Show(@"GAME OVER!") == DialogResult.OK) {}
+            if (MessageBox.Show(msg) == DialogResult.OK) {}
             // Disable canvas updater
             Playfield.Paint -= Update;
-            // Destruct the snake
+            // Disable canvas
+            Playfield.Enabled = false;
+            // Destroy the snake
             Snake.Dispose();
             // Delete the snake
             Snake = null;
@@ -164,13 +175,13 @@ namespace Snake_game {
             Point fix = new Point(Snake.HeadPoint.X, Snake.HeadPoint.Y);
             if (fix.X < 0 || fix.Y < 0 || fix.X >= _width || fix.Y >= _height) {
                 if (fix.X < 0) // Go beyond the left wall
-                    fix.X = _width - CELL_WIDTH * Math.Abs(fix.X / CELL_WIDTH);
+                    fix.X = _width - CellSize * Math.Abs(fix.X / CellSize);
                 else if (fix.Y < 0) // Go beyond the top wall
-                    fix.Y = _height - CELL_HEIGHT * Math.Abs(fix.Y / CELL_HEIGHT);
+                    fix.Y = _height - CellSize * Math.Abs(fix.Y / CellSize);
                 else if (fix.X >= _width) // Go beyond the right wall
-                    fix.X = (Math.Abs((fix.X - _width) / CELL_WIDTH) - 1) * CELL_WIDTH;
+                    fix.X = (Math.Abs((fix.X - _width) / CellSize) - 1) * CellSize;
                 else if (fix.Y >= _height) // Go beyond the bottom wall
-                    fix.Y = (Math.Abs((fix.Y - _height) / CELL_HEIGHT) - 1) * CELL_HEIGHT;
+                    fix.Y = (Math.Abs((fix.Y - _height) / CellSize) - 1) * CellSize;
                 Snake.HeadPoint = fix;
                 Snake.UpdateSnake(Map);
             }
@@ -180,15 +191,33 @@ namespace Snake_game {
             int x, y;
 
             do {
-                x = rnd.Next(_width/CELL_WIDTH);
-                y = rnd.Next(_height/CELL_HEIGHT);
+                x = rnd.Next(_width/CellSize);
+                y = rnd.Next(_height/CellSize);
 
-                CurrentFoodPoint = new Point(x*CELL_WIDTH, y*CELL_HEIGHT);
+                CurrentFoodPoint = new Point(x*CellSize, y*CellSize);
             } while (IsSnakeBody(new Point(x, y))); 
         }
-        private bool IsSnakeBody(Point point) => Map[point.X / CELL_WIDTH, point.Y / CELL_HEIGHT];
+        private bool IsSnakeBody(Point point) => Map[point.X / CellSize, point.Y / CellSize];
         public void SetKeyInput(Keys key) {
             if (_keyPressed == Keys.None) _keyPressed = key;
+        }
+        public void Dispose() {
+            _cellColor = _snakeHeadColor = _snakeBodyColor = _foodColor = _snakeHeadLoseColor = Color.Empty;
+
+            _cellBrush?.Dispose();
+            _snakeHeadBrush?.Dispose();
+            _snakeBodyBrush?.Dispose();
+            _foodBrush?.Dispose();
+            _snakeHeadLoseBrush?.Dispose();
+
+            _keyPressed = Keys.None;
+
+            Map = null;
+            Snake?.Dispose();
+            Timer?.Dispose();
+            CurrentFoodPoint = Point.Empty;
+            ChangeDirectionLabel = null;
+            ChangeScore = null;
         }
         #endregion
     }

@@ -31,6 +31,7 @@
             this.lblScore = new System.Windows.Forms.Label();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.newGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panelGame.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picCanvas)).BeginInit();
             this.panelStats.SuspendLayout();
@@ -49,6 +50,7 @@
             // picCanvas
             // 
             this.picCanvas.BackColor = System.Drawing.SystemColors.Control;
+            this.picCanvas.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.picCanvas.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.picCanvas.Dock = System.Windows.Forms.DockStyle.Fill;
             this.picCanvas.Location = new System.Drawing.Point(0, 0);
@@ -109,7 +111,8 @@
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.newGameToolStripMenuItem});
+            this.newGameToolStripMenuItem,
+            this.settingsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(846, 24);
@@ -123,6 +126,13 @@
             this.newGameToolStripMenuItem.Size = new System.Drawing.Size(76, 20);
             this.newGameToolStripMenuItem.Text = "New game";
             this.newGameToolStripMenuItem.Click += new System.EventHandler(this.newGameToolStripMenuItem_Click);
+            // 
+            // settingsToolStripMenuItem
+            // 
+            this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.settingsToolStripMenuItem.Text = "Settings";
+            this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
             // 
             // Main
             // 
@@ -161,6 +171,7 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem newGameToolStripMenuItem;
         private System.Windows.Forms.PictureBox picCanvas;
+        private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
     }
 }
 

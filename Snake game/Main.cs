@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using static Snake_game.Constants;
+using static Snake_game.Settings;
 
 namespace Snake_game {
     public partial class Main : Form {
@@ -18,22 +18,22 @@ namespace Snake_game {
 
         #region Event handlers
         private void Main_Load(object sender, EventArgs e) {
-            picCanvas.BackColor = Color.FromArgb(CELL_COLOR_R, CELL_COLOR_G, CELL_COLOR_B);
+            picCanvas.BackColor = Color.FromArgb(CellColorR, CellColorG, CellColorB);
             picCanvas.Enabled = false;
             lblScore.Text = 0.ToString();
             lblDirection.Text = Direction.None.ToString();
         }
         private void newGameToolStripMenuItem_Click(object sender, EventArgs e) {
             picCanvas.Enabled = true;
-            if (lblDirection.Text.Equals(Direction.None.ToString())) StartNewGame();
+            if (_core?.Snake == null) StartNewGame();
         }
-        private void Main_KeyDown(object sender, KeyEventArgs e) => _core.SetKeyInput(e.KeyCode);
+        private void Main_KeyDown(object sender, KeyEventArgs e) => _core?.SetKeyInput(e.KeyCode);
         #endregion
 
         #region Methods
         private void StartNewGame() {
-            _snake = new Snake(new Point(DEFAULT_SNAKE_LOCATION_X, DEFAULT_SNAKE_LOCATION_Y), DEFAULT_SNAKE_DIRECTION);
-            _core = new SnakeGameManager(picCanvas, _snake, UPDATE_INTERVAL) {
+            _snake = new Snake(new Point(DefaultSnakeLocationX, DefaultSnakeLocationY), DefaultSnakeDirection);
+            _core = new SnakeGameManager(picCanvas, _snake, UpdateInterval) {
                 ChangeDirectionLabel = UpdateCurrentDirection,
                 ChangeScore = UpdateScore
             };
@@ -42,5 +42,9 @@ namespace Snake_game {
         private void UpdateCurrentDirection(Direction dir) => lblDirection.Text = dir.ToString();
         private void UpdateScore(int score) => lblScore.Text = score.ToString();
         #endregion
+
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e) {
+            if (_core?.Snake == null) new Settings().ShowDialog();
+        }
     }
 }
