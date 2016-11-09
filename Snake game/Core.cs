@@ -6,12 +6,11 @@ namespace Snake_game {
     using static Settings;
     internal class SnakeGameManager : IDisposable {
         #region Delegates
-        public delegate void ChangeDirectionLabelDelegate(Direction dir);
-        public delegate void ChangeCurrentScoreDelegate(int score);
+        public delegate void UpdateScoreDelegate(int score);
+        public delegate void UpdateBestScoreDelegate(int score);
         #endregion
 
         #region Fields
-        private Color _cellColor, _snakeHeadColor, _snakeBodyColor, _foodColor, _snakeHeadLoseColor;
         private Brush _cellBrush, _snakeHeadBrush, _snakeBodyBrush, _foodBrush, _snakeHeadLoseBrush;
         private int _width, _height;
         private static Keys _keyPressed;
@@ -35,8 +34,8 @@ namespace Snake_game {
         private Timer Timer { get; } = new Timer();
         public Point CurrentFoodPoint { get; private set; }
         public int CurrentScore { get; private set; }
-        internal ChangeDirectionLabelDelegate ChangeDirectionLabel { get; set; }
-        internal ChangeCurrentScoreDelegate ChangeScore { get; set; }
+        internal UpdateScoreDelegate UpdateScore { get; set; }
+        internal UpdateBestScoreDelegate UpdateBestScore { get; set; }
         #endregion
 
         #region Initialization
@@ -46,23 +45,15 @@ namespace Snake_game {
             _keyPressed = Keys.None;
             CurrentScore = 0;
 
-            SetLocalColors();
             SetLocalBrushes();
             GenerateMap();
         }
-        private void SetLocalColors() {
-            _cellColor = Color.FromArgb(CellColorR, CellColorG, CellColorB);
-            _snakeHeadColor = Color.FromArgb(SnakeHeadColorR, SnakeHeadColorG, SnakeBodyColorB);
-            _snakeBodyColor = Color.FromArgb(SnakeBodyColorR, SnakeBodyColorG, SnakeBodyColorB);
-            _foodColor = Color.FromArgb(FoodColorR, FoodColorG, FoodColorB);
-            _snakeHeadLoseColor = Color.FromArgb(SnakeHeadLoseColorR, SnakeHeadLoseColorG, SnakeHeadLoseColorB);
-        }
         private void SetLocalBrushes() {
-            _cellBrush = new SolidBrush(_cellColor);
-            _snakeHeadBrush = new SolidBrush(_snakeHeadColor);
-            _snakeBodyBrush = new SolidBrush(_snakeBodyColor);
-            _foodBrush = new SolidBrush(_foodColor);
-            _snakeHeadLoseBrush = new SolidBrush(_snakeHeadLoseColor);
+            _cellBrush = new SolidBrush(CellColor);
+            _snakeHeadBrush = new SolidBrush(SnakeHeadColor);
+            _snakeBodyBrush = new SolidBrush(SnakeBodyColor);
+            _foodBrush = new SolidBrush(FoodColor);
+            _snakeHeadLoseBrush = new SolidBrush(SnakeHeadLoseColor);
         }
         private void GenerateMap() {
             Map = new bool[_width / CellSize, _height / CellSize];
@@ -118,7 +109,8 @@ namespace Snake_game {
                 e.Graphics.FillRectangle(_foodBrush, CurrentFoodPoint.X, CurrentFoodPoint.Y, CellSize, CellSize);
 
                 CurrentScore += FoodScore;
-                ChangeScore?.Invoke(CurrentScore);
+                UpdateScore?.Invoke(CurrentScore);
+                if (CurrentScore > Main.BestScore) UpdateBestScore?.Invoke(CurrentScore);
             }
 
             if (MaxScore > 0 && CurrentScore >= MaxScore) {
@@ -146,9 +138,7 @@ namespace Snake_game {
             // Reset region
             _width = _height = 0;
             // Reset score label (main form)
-            ChangeScore(0);
-            // Reset direction label (main form)
-            ChangeDirectionLabel(Direction.None);
+            UpdateScore(0);
         }
         private void SetSnakeDirection() {
             switch (_keyPressed) {
@@ -165,7 +155,6 @@ namespace Snake_game {
                     if (Snake.MovingDirection != Direction.Up) Snake.MovingDirection = Direction.Down;
                     break;
             }
-            ChangeDirectionLabel?.Invoke(Snake.MovingDirection);
             _keyPressed = Keys.None;
             Playfield.Invalidate();
         }
@@ -202,11 +191,8 @@ namespace Snake_game {
         public void SetKeyInput(Keys key) {
             if (_keyPressed == Keys.None) _keyPressed = key;
         }
-
         public void ClearScreen(Graphics g) => g?.FillRectangle(_cellBrush, Playfield.DisplayRectangle);
         public void Dispose() {
-            _cellColor = _snakeHeadColor = _snakeBodyColor = _foodColor = _snakeHeadLoseColor = Color.Empty;
-
             _cellBrush?.Dispose();
             _snakeHeadBrush?.Dispose();
             _snakeBodyBrush?.Dispose();
@@ -219,8 +205,8 @@ namespace Snake_game {
             Snake?.Dispose();
             Timer?.Dispose();
             CurrentFoodPoint = Point.Empty;
-            ChangeDirectionLabel = null;
-            ChangeScore = null;
+            UpdateScore = null;
+            UpdateBestScore = null;
         }
         #endregion
     }

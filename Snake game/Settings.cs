@@ -1,10 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Drawing;
+using System.Text;
 using System.Windows.Forms;
+using IniParser;
+using IniParser.Model;
+using IniParser.Model.Configuration;
 
 namespace Snake_game {
     public partial class Settings : Form {
         #region Fields
+        public const string CONFIG_FILE_NAME = @"config.ini";
 
         public enum Direction { None, Up, Down, Left, Right }
 
@@ -21,7 +28,6 @@ namespace Snake_game {
         public static int CellColorR = 255;
         public static int CellColorG = 255;
         public static int CellColorB = 255;
-
         #endregion
 
         #region Snake
@@ -33,7 +39,7 @@ namespace Snake_game {
 
         public static int SnakeHeadColorR = 0;
         public static int SnakeHeadColorG = 255;
-        public static int SnakeHeadColorB = 0;
+        public static int SnakeHeadColorB = 0;       
 
         public static int SnakeBodyColorR = 0;
         public static int SnakeBodyColorG = 128;
@@ -52,6 +58,21 @@ namespace Snake_game {
 
         public static int FoodScore = 1;
 
+        #endregion
+
+        #region Keys
+        private const string SIZE_KEY = @"Size";
+        private const string SPEED_KEY = @"Speed";
+        private const string HEAD_COLOR_KEY = @"HeadColor";
+        private const string BODY_COLOR_KEY = @"BodyColor";
+        private const string FOOD_COLOR_KEY = @"FoodColor";
+        private const string HEAD_LOSE_COLOR_KEY = @"HeadLoseColor";
+        private const string BACK_COLOR_KEY = @"BackColor";
+        private const string FOOD_SCORE_KEY = @"FoodScore";
+        private const string MAX_SCORE_KEY = @"MaxScore";
+        private const string DEF_LENGTH_KEY = @"DefaultLength";
+        private const string DEF_DIR_KEY = @"DefaultDirection";
+        private const string DEF_SPAWN_POINT_KEY = @"DefaultSpawnPoint";
         #endregion
         #endregion
 
@@ -87,17 +108,166 @@ namespace Snake_game {
         #endregion
 
         #region Methods
+        public static void LoadIniConfig() {
+            if (!File.Exists(CONFIG_FILE_NAME) || string.IsNullOrEmpty(File.ReadAllText(CONFIG_FILE_NAME))) {
+                File.CreateText(CONFIG_FILE_NAME).Close();
+                SetIniConfig(CONFIG_FILE_NAME);
+            }
+
+            FileIniDataParser fileIniDataParser = new FileIniDataParser();
+            fileIniDataParser.Parser.Configuration.CommentString = @"// ";
+            fileIniDataParser.Parser.Configuration.NewLineStr = Environment.NewLine;
+            fileIniDataParser.Parser.Configuration.SkipInvalidLines = true;
+
+            IniData iniData = fileIniDataParser.ReadFile(CONFIG_FILE_NAME, Encoding.UTF8);
+            SectionDataCollection sectionDataCollection = iniData.Sections;
+
+            SectionData playfieldSectionData = sectionDataCollection.GetSectionData(@"PLAYFIELD");
+            SectionData snakeSectionData = sectionDataCollection.GetSectionData(@"SNAKE");
+            SectionData foodSectionData = sectionDataCollection.GetSectionData(@"FOOD");
+            SectionData scoreSectionData = sectionDataCollection.GetSectionData(@"SCORE");
+
+            if (playfieldSectionData != null) {
+                KeyDataCollection playfieldKeys = playfieldSectionData.Keys;
+
+                KeyData cellSize = playfieldKeys.GetKeyData(@"CellSize");
+                KeyData backColor = playfieldKeys.GetKeyData(@"BackgroundColorRGB");
+                KeyData updateInterval = playfieldKeys.GetKeyData(@"UpdateInterval");
+
+                if (!string.IsNullOrEmpty(cellSize?.Value))
+                    try {
+                        CellSize = Convert.ToInt32(cellSize.Value);
+                    }
+                    catch (Exception e) {
+                         throw new Exception($"An error occurred while reading {cellSize.KeyName} value!", e);
+                    }
+                if (!string.IsNullOrEmpty(backColor?.Value))
+                    try {
+                        Color value = Helpers.GetColorFromRgbString(backColor.Value, ',');
+                        CellColorR = value.R;
+                        CellColorG = value.G;
+                        CellColorB = value.B;
+                    }
+                    catch (Exception e) {
+                        throw new Exception($"An error occurred while reading {backColor.KeyName} value!", e);
+                    }
+                if (!string.IsNullOrEmpty(updateInterval?.Value))
+                    try {
+                        UpdateInterval = Convert.ToInt32(updateInterval.Value);
+                    }
+                    catch (Exception e) {
+                        throw new Exception($"An error occurred while reading {updateInterval.KeyName} value!", e);
+                    }
+            }
+
+            if (snakeSectionData != null) {
+                KeyDataCollection snakeKeys = snakeSectionData.Keys;
+
+                KeyData headColor = snakeKeys.GetKeyData(@"HeadColorRGB");
+                KeyData headLoseColor = snakeKeys.GetKeyData(@"HeadLoseColorRGB");
+                KeyData bodyColor = snakeKeys.GetKeyData(@"BodyColorRGB");
+                KeyData defaultLength = snakeKeys.GetKeyData(@"DefaultLength");
+                KeyData defaultDirection = snakeKeys.GetKeyData(@"DefaultDirection");
+                KeyData defaultSpawnPoint = snakeKeys.GetKeyData(@"DefaultSpawnPoint");
+
+                if (!string.IsNullOrEmpty(headColor?.Value))
+                    try {
+                        Color value = Helpers.GetColorFromRgbString(headColor.Value, ',');
+                        SnakeHeadColorR = value.R;
+                        SnakeHeadColorG = value.G;
+                        SnakeHeadColorB = value.B;
+                    }
+                    catch (Exception e) {
+                        throw new Exception($"An error occurred while reading {headColor.KeyName} value!", e);
+                    }
+                if (!string.IsNullOrEmpty(headLoseColor?.Value))
+                    try {
+                        Color value = Helpers.GetColorFromRgbString(headLoseColor.Value, ',');
+                        SnakeHeadLoseColorR = value.R;
+                        SnakeHeadLoseColorG = value.G;
+                        SnakeHeadLoseColorR = value.B;
+                    } catch (Exception e) {
+                        throw new Exception($"An error occurred while reading {headLoseColor.KeyName} value!", e);
+                    }
+                if (!string.IsNullOrEmpty(bodyColor?.Value))
+                    try {
+                        Color value = Helpers.GetColorFromRgbString(bodyColor.Value, ',');
+                        SnakeBodyColorR = value.R;
+                        SnakeBodyColorG = value.G;
+                        SnakeBodyColorB = value.B;
+                    } catch (Exception e) {
+                        throw new Exception($"An error occurred while reading {bodyColor.KeyName} value!", e);
+                    }
+                if (!string.IsNullOrEmpty(defaultLength?.Value))
+                    try {
+                        DefaultSnakeLength = Convert.ToInt32(defaultLength.Value);
+                    }
+                    catch (Exception e) {
+                        throw new Exception($"An error occurred while reading {defaultLength.KeyName} value!", e);
+                    }
+                if (!string.IsNullOrEmpty(defaultDirection?.Value))
+                    switch (defaultDirection.Value) {
+                        case @"Up": DefaultSnakeDirection = Direction.Up; break;
+                        case @"Down": DefaultSnakeDirection = Direction.Down; break;
+                        case @"Left": DefaultSnakeDirection = Direction.Left; break;
+                        case @"Right": DefaultSnakeDirection = Direction.Right; break;
+                        default: throw new FormatException($"An error occurred while reading {defaultDirection.KeyName} value!");
+                    }
+                if (!string.IsNullOrEmpty(defaultSpawnPoint?.Value))
+                    try {
+                        Point value = Helpers.GetPointFromXyString(defaultSpawnPoint.Value, ',');
+                        DefaultSnakeLocationX = value.X;
+                        DefaultSnakeLocationY = value.Y;
+                    }
+                    catch (Exception e) {
+                        throw new Exception($"An error occurred while reading {defaultSpawnPoint.KeyName} value!", e);
+                    }
+            }
+
+            if (foodSectionData != null) {
+                KeyDataCollection foodKeys = foodSectionData.Keys;
+
+                KeyData foodColor = foodKeys.GetKeyData(@"FoodColorRGB");
+                KeyData foodScore = foodKeys.GetKeyData(@"FoodScore");
+
+                if (!string.IsNullOrEmpty(foodColor?.Value))
+                    try {
+                        Color value = Helpers.GetColorFromRgbString(foodColor.Value, ',');
+                        FoodColorR = value.R;
+                        FoodColorG = value.G;
+                        FoodColorB = value.B;
+                    }
+                    catch (Exception e) {
+                        throw new Exception($"An error occurred while reading {foodColor.KeyName} value!", e);
+                    }
+                if (!string.IsNullOrEmpty(foodScore?.Value))
+                    try {
+                        FoodScore = Convert.ToInt32(foodScore.Value);
+                    }
+                    catch (Exception e) {
+                        throw new Exception($"An error occurred while reading {foodScore.KeyName} value!", e);
+                    }
+            }
+
+            if (scoreSectionData != null) {
+                KeyDataCollection scoreKeys = scoreSectionData.Keys;
+
+                KeyData maxScore = scoreKeys.GetKeyData(@"MaxScore");
+
+                if (!string.IsNullOrEmpty(maxScore?.Value))
+                    try {
+                        MaxScore = Convert.ToInt32(maxScore.Value);
+                    }
+                    catch (Exception e) {
+                        throw new Exception($"An error occurred while reading {maxScore.KeyName} value!", e);
+                    }
+            }
+        }
         private void LoadGameSettings() {
             int size = CellSize;
             int speed = UpdateInterval;
             int score = FoodScore;
             int max = MaxScore;
-
-            Color backColor = Color.FromArgb(CellColorR, CellColorG, CellColorB);
-            Color headColor = Color.FromArgb(SnakeHeadColorR, SnakeHeadColorG, SnakeHeadColorB);
-            Color bodyColor = Color.FromArgb(SnakeBodyColorR, SnakeBodyColorG, SnakeBodyColorB);
-            Color foodColor = Color.FromArgb(FoodColorR, FoodColorG, FoodColorB);
-            Color headLoseColor = Color.FromArgb(SnakeHeadLoseColorR, SnakeHeadLoseColorG, SnakeHeadLoseColorB);
 
             int defaultLength = DefaultSnakeLength;
             Direction defaultDirection = DefaultSnakeDirection;
@@ -107,7 +277,7 @@ namespace Snake_game {
             LoadSpeedSetting(speed);
             LoadFoodScoreSetting(score);
             LoadMaxScoreSetting(max);
-            LoadColorSettings(backColor, headColor, bodyColor, foodColor, headLoseColor);
+            LoadColorSettings(CellColor, SnakeHeadColor, SnakeBodyColor, FoodColor, SnakeHeadLoseColor);
             LoadDefaultSettings(defaultLength, defaultDirection, defaultSpawnPoint);
         }
         private void LoadSizeSetting(int size) {
@@ -132,6 +302,9 @@ namespace Snake_game {
                     break;
                 case 60:
                     radUltraBigSize.Checked = true;
+                    break;
+                default:
+                    radNormalSpeed.Checked = true;
                     break;
             }
         }
@@ -219,6 +392,112 @@ namespace Snake_game {
             SetMaxScoreSetting();
             SetColorSettings();
             SetDefaultSettings();
+            SetIniConfig(CONFIG_FILE_NAME);
+        }
+        private static void SetIniConfig(string path) {
+            if (!File.Exists(path)) File.CreateText(path).Close();
+            FileIniDataParser iniDataParser = new FileIniDataParser();
+            SectionDataCollection sectionDataCollection = new SectionDataCollection();
+            
+            SectionData playfieldSectionData = new SectionData(@"PLAYFIELD");
+            KeyData cellSize = new KeyData(@"CellSize") {
+                Value = CellSize.ToString(),
+                Comments = new List<string> {
+                    @"Size of a cell.",
+                    $"Must be divisible by {PLAYFIELD_WIDTH} (width) and {PLAYFIELD_HEIGHT} (height)."
+                }
+            };
+            KeyData backColor = new KeyData(@"BackgroundColorRGB") {
+                Value = Helpers.ToRgbString(CellColor, @", "),
+                Comments = new List<string> {
+                    @"Background color in RGB format."
+                }
+            };
+            KeyData updateInterval = new KeyData(@"UpdateInterval") {
+                Value = UpdateInterval.ToString(),
+                Comments = new List<string> {
+                    @"The time (in milliseconds) between each time the snake moves.",
+                    @"The smaller the interval is, the faster the snake moves."
+                }
+            };
+            Helpers.AddKeysToSection(playfieldSectionData, cellSize, backColor, updateInterval);
+
+            SectionData snakeSectionData = new SectionData(@"SNAKE");
+            KeyData headColor = new KeyData(@"HeadColorRGB") {
+                Value = Helpers.ToRgbString(SnakeHeadColor, @", "),
+                Comments = new List<string> {
+                    @"Color of snake's head in RGB format."
+                }
+            };
+            KeyData headLoseColor = new KeyData("HeadLoseColorRGB") {
+                Value = Helpers.ToRgbString(SnakeHeadLoseColor, @", "),
+                Comments = new List<string> {
+                    @"Color of snake's head when lose in RGB format."
+                }
+            };
+            KeyData bodyColor = new KeyData(@"BodyColorRGB") {
+                Value = Helpers.ToRgbString(SnakeBodyColor, @", "),
+                Comments = new List<string> {
+                    @"Color of snake's body in RGB format."
+                }
+            };
+            KeyData defaultLength = new KeyData(@"DefaultLength") {
+                Value = DefaultSnakeLength.ToString(),
+                Comments = new List<string> {
+                    @"Default length of the snake when a new game starts.",
+                    @"The value must be greater than 1."
+                }
+            };
+            KeyData defaultDirection = new KeyData(@"DefaultDirection") {
+                Value = DefaultSnakeDirection.ToString(),
+                Comments = new List<string> {
+                    @"Default moving direction of the snake when a new game starts.",
+                    @"The value can only be Up, Down, Left or Right."
+                }
+            };
+            KeyData defaultSpawnPoint = new KeyData(@"DefaultSpawnPoint") {
+                Value = $"{DefaultSnakeLocationX}, {DefaultSnakeLocationY}",
+                Comments = new List<string> {
+                    @"Default spawn point (X, Y) of the snake when a new game starts.",
+                    $"The value must be between 1 and {PLAYFIELD_WIDTH/CellSize}."
+                }
+            };
+            Helpers.AddKeysToSection(snakeSectionData, headColor, headLoseColor, bodyColor, defaultLength, defaultDirection, defaultSpawnPoint);
+
+            SectionData foodSectionData = new SectionData(@"FOOD");
+            KeyData foodColor = new KeyData(@"FoodColorRGB") {
+                Value = Helpers.ToRgbString(FoodColor, @", "),
+                Comments = new List<string> {
+                    @"Color of food in RGB format."
+                }
+            };
+            KeyData foodScore = new KeyData(@"FoodScore") {
+                Value = FoodScore.ToString(),
+                Comments = new List<string> {
+                    @"Score to be received after eating food"
+                }
+            };
+            Helpers.AddKeysToSection(foodSectionData, foodColor, foodScore);
+
+            SectionData scoreSectionData = new SectionData(@"SCORE");
+            
+            KeyData maxScore = new KeyData(@"MaxScore") {
+                Value = MaxScore.ToString(),
+                Comments = new List<string> {
+                    @"Maximum score of the game.",
+                    @"When the maximum score is reached, you win the game.",
+                    @"The value must be a positive integer number. 0 means unlimited."
+                }
+            };
+            Helpers.AddKeysToSection(scoreSectionData, maxScore);
+
+            sectionDataCollection.Add(playfieldSectionData);
+            sectionDataCollection.Add(snakeSectionData);
+            sectionDataCollection.Add(foodSectionData);
+            sectionDataCollection.Add(scoreSectionData);
+
+            IniData iniData = new IniData(sectionDataCollection) {Configuration = new IniParserConfiguration {CommentString = @"// ", NewLineStr = Environment.NewLine} };
+            iniDataParser.WriteFile(path, iniData, Encoding.UTF8);
         }
         private void SetSizeSetting() {
             if (radImpossibleSize.Checked) CellSize = 1;
@@ -274,6 +553,14 @@ namespace Snake_game {
                 case @"Right": DefaultSnakeDirection = Direction.Right; break;
             }
         }
+        #endregion
+
+        #region Properties
+        public static Color CellColor => Color.FromArgb(CellColorR, CellColorG, CellColorB);
+        public static Color SnakeHeadColor => Color.FromArgb(SnakeHeadColorR, SnakeHeadColorG, SnakeHeadColorB);
+        public static Color SnakeBodyColor => Color.FromArgb(SnakeBodyColorR, SnakeBodyColorG, SnakeBodyColorB);
+        public static Color SnakeHeadLoseColor => Color.FromArgb(SnakeHeadLoseColorR, SnakeHeadLoseColorG, SnakeHeadLoseColorB);
+        public static Color FoodColor => Color.FromArgb(FoodColorR, FoodColorG, FoodColorB);
         #endregion
     }
 }

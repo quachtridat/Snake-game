@@ -27,16 +27,22 @@
             this.picCanvas = new System.Windows.Forms.PictureBox();
             this.panelStats = new System.Windows.Forms.Panel();
             this.tableStats = new System.Windows.Forms.TableLayoutPanel();
-            this.lblDirection = new System.Windows.Forms.Label();
-            this.lblScore = new System.Windows.Forms.Label();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.newGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.panelScore = new System.Windows.Forms.Panel();
+            this.lblScoreTitle = new System.Windows.Forms.Label();
+            this.lblScore = new System.Windows.Forms.Label();
+            this.panelBestScore = new System.Windows.Forms.Panel();
+            this.lblBestScore = new System.Windows.Forms.Label();
+            this.lblBestScoreTitle = new System.Windows.Forms.Label();
             this.panelGame.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picCanvas)).BeginInit();
             this.panelStats.SuspendLayout();
             this.tableStats.SuspendLayout();
             this.menuStrip1.SuspendLayout();
+            this.panelScore.SuspendLayout();
+            this.panelBestScore.SuspendLayout();
             this.SuspendLayout();
             // 
             // panelGame
@@ -71,8 +77,8 @@
             // 
             this.tableStats.ColumnCount = 1;
             this.tableStats.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableStats.Controls.Add(this.lblDirection, 0, 1);
-            this.tableStats.Controls.Add(this.lblScore, 0, 0);
+            this.tableStats.Controls.Add(this.panelBestScore, 0, 1);
+            this.tableStats.Controls.Add(this.panelScore, 0, 0);
             this.tableStats.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableStats.Location = new System.Drawing.Point(0, 0);
             this.tableStats.Name = "tableStats";
@@ -81,32 +87,6 @@
             this.tableStats.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableStats.Size = new System.Drawing.Size(215, 600);
             this.tableStats.TabIndex = 0;
-            // 
-            // lblDirection
-            // 
-            this.lblDirection.AutoEllipsis = true;
-            this.lblDirection.AutoSize = true;
-            this.lblDirection.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblDirection.Font = new System.Drawing.Font("Microsoft Sans Serif", 50F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblDirection.Location = new System.Drawing.Point(3, 300);
-            this.lblDirection.Name = "lblDirection";
-            this.lblDirection.Size = new System.Drawing.Size(209, 300);
-            this.lblDirection.TabIndex = 1;
-            this.lblDirection.Text = "Dir";
-            this.lblDirection.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblScore
-            // 
-            this.lblScore.AutoEllipsis = true;
-            this.lblScore.AutoSize = true;
-            this.lblScore.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblScore.Font = new System.Drawing.Font("Microsoft Sans Serif", 50F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblScore.Location = new System.Drawing.Point(3, 0);
-            this.lblScore.Name = "lblScore";
-            this.lblScore.Size = new System.Drawing.Size(209, 300);
-            this.lblScore.TabIndex = 0;
-            this.lblScore.Text = "Score";
-            this.lblScore.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // menuStrip1
             // 
@@ -134,6 +114,72 @@
             this.settingsToolStripMenuItem.Text = "Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
             // 
+            // panelScore
+            // 
+            this.panelScore.Controls.Add(this.lblScore);
+            this.panelScore.Controls.Add(this.lblScoreTitle);
+            this.panelScore.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelScore.Location = new System.Drawing.Point(3, 3);
+            this.panelScore.Name = "panelScore";
+            this.panelScore.Size = new System.Drawing.Size(209, 294);
+            this.panelScore.TabIndex = 0;
+            // 
+            // lblScoreTitle
+            // 
+            this.lblScoreTitle.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblScoreTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 30F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblScoreTitle.Location = new System.Drawing.Point(0, 0);
+            this.lblScoreTitle.Name = "lblScoreTitle";
+            this.lblScoreTitle.Size = new System.Drawing.Size(209, 46);
+            this.lblScoreTitle.TabIndex = 1;
+            this.lblScoreTitle.Text = "Score";
+            this.lblScoreTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lblScore
+            // 
+            this.lblScore.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblScore.Font = new System.Drawing.Font("Microsoft Sans Serif", 50F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblScore.ForeColor = System.Drawing.Color.Green;
+            this.lblScore.Location = new System.Drawing.Point(0, 46);
+            this.lblScore.Name = "lblScore";
+            this.lblScore.Size = new System.Drawing.Size(209, 248);
+            this.lblScore.TabIndex = 2;
+            this.lblScore.Text = "0";
+            this.lblScore.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // panelBestScore
+            // 
+            this.panelBestScore.Controls.Add(this.lblBestScore);
+            this.panelBestScore.Controls.Add(this.lblBestScoreTitle);
+            this.panelBestScore.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelBestScore.Location = new System.Drawing.Point(3, 303);
+            this.panelBestScore.Name = "panelBestScore";
+            this.panelBestScore.Size = new System.Drawing.Size(209, 294);
+            this.panelBestScore.TabIndex = 1;
+            // 
+            // lblBestScore
+            // 
+            this.lblBestScore.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblBestScore.Font = new System.Drawing.Font("Microsoft Sans Serif", 50F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblBestScore.ForeColor = System.Drawing.Color.Red;
+            this.lblBestScore.Location = new System.Drawing.Point(0, 46);
+            this.lblBestScore.Name = "lblBestScore";
+            this.lblBestScore.Size = new System.Drawing.Size(209, 248);
+            this.lblBestScore.TabIndex = 2;
+            this.lblBestScore.Text = "0";
+            this.lblBestScore.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lblBestScoreTitle
+            // 
+            this.lblBestScoreTitle.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblBestScoreTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 30F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblBestScoreTitle.Location = new System.Drawing.Point(0, 0);
+            this.lblBestScoreTitle.Name = "lblBestScoreTitle";
+            this.lblBestScoreTitle.Size = new System.Drawing.Size(209, 46);
+            this.lblBestScoreTitle.TabIndex = 1;
+            this.lblBestScoreTitle.Text = "Best";
+            this.lblBestScoreTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -153,9 +199,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.picCanvas)).EndInit();
             this.panelStats.ResumeLayout(false);
             this.tableStats.ResumeLayout(false);
-            this.tableStats.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.panelScore.ResumeLayout(false);
+            this.panelBestScore.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -166,12 +213,16 @@
         private System.Windows.Forms.Panel panelGame;
         private System.Windows.Forms.Panel panelStats;
         private System.Windows.Forms.TableLayoutPanel tableStats;
-        private System.Windows.Forms.Label lblDirection;
-        private System.Windows.Forms.Label lblScore;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem newGameToolStripMenuItem;
         private System.Windows.Forms.PictureBox picCanvas;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
+        private System.Windows.Forms.Panel panelBestScore;
+        private System.Windows.Forms.Label lblBestScore;
+        private System.Windows.Forms.Label lblBestScoreTitle;
+        private System.Windows.Forms.Panel panelScore;
+        private System.Windows.Forms.Label lblScore;
+        private System.Windows.Forms.Label lblScoreTitle;
     }
 }
 
