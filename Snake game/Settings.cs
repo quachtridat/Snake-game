@@ -61,13 +61,13 @@ namespace Snake_game {
         #endregion
 
         #region Keys
-        private const string SIZE_KEY = @"Size";
-        private const string SPEED_KEY = @"Speed";
-        private const string HEAD_COLOR_KEY = @"HeadColor";
-        private const string BODY_COLOR_KEY = @"BodyColor";
-        private const string FOOD_COLOR_KEY = @"FoodColor";
-        private const string HEAD_LOSE_COLOR_KEY = @"HeadLoseColor";
-        private const string BACK_COLOR_KEY = @"BackColor";
+        private const string CELL_SIZE_KEY = @"CellSize";
+        private const string UPDATE_INTERVAL_KEY = @"UpdateInterval";
+        private const string HEAD_COLOR_KEY = @"HeadColorRGB";
+        private const string BODY_COLOR_KEY = @"BodyColorRGB";
+        private const string FOOD_COLOR_KEY = @"FoodColorRGB";
+        private const string HEAD_LOSE_COLOR_KEY = @"HeadLoseColorRGB";
+        private const string BACKCOLOR_KEY = @"BackgroundColorRGB";
         private const string FOOD_SCORE_KEY = @"FoodScore";
         private const string MAX_SCORE_KEY = @"MaxScore";
         private const string DEF_LENGTH_KEY = @"DefaultLength";
@@ -130,9 +130,9 @@ namespace Snake_game {
             if (playfieldSectionData != null) {
                 KeyDataCollection playfieldKeys = playfieldSectionData.Keys;
 
-                KeyData cellSize = playfieldKeys.GetKeyData(@"CellSize");
-                KeyData backColor = playfieldKeys.GetKeyData(@"BackgroundColorRGB");
-                KeyData updateInterval = playfieldKeys.GetKeyData(@"UpdateInterval");
+                KeyData cellSize = playfieldKeys.GetKeyData(CELL_SIZE_KEY);
+                KeyData backColor = playfieldKeys.GetKeyData(BACKCOLOR_KEY);
+                KeyData updateInterval = playfieldKeys.GetKeyData(UPDATE_INTERVAL_KEY);
 
                 if (!string.IsNullOrEmpty(cellSize?.Value))
                     try {
@@ -163,12 +163,12 @@ namespace Snake_game {
             if (snakeSectionData != null) {
                 KeyDataCollection snakeKeys = snakeSectionData.Keys;
 
-                KeyData headColor = snakeKeys.GetKeyData(@"HeadColorRGB");
-                KeyData headLoseColor = snakeKeys.GetKeyData(@"HeadLoseColorRGB");
-                KeyData bodyColor = snakeKeys.GetKeyData(@"BodyColorRGB");
-                KeyData defaultLength = snakeKeys.GetKeyData(@"DefaultLength");
-                KeyData defaultDirection = snakeKeys.GetKeyData(@"DefaultDirection");
-                KeyData defaultSpawnPoint = snakeKeys.GetKeyData(@"DefaultSpawnPoint");
+                KeyData headColor = snakeKeys.GetKeyData(HEAD_COLOR_KEY);
+                KeyData headLoseColor = snakeKeys.GetKeyData(HEAD_LOSE_COLOR_KEY);
+                KeyData bodyColor = snakeKeys.GetKeyData(BODY_COLOR_KEY);
+                KeyData defaultLength = snakeKeys.GetKeyData(DEF_LENGTH_KEY);
+                KeyData defaultDirection = snakeKeys.GetKeyData(DEF_DIR_KEY);
+                KeyData defaultSpawnPoint = snakeKeys.GetKeyData(DEF_SPAWN_POINT_KEY);
 
                 if (!string.IsNullOrEmpty(headColor?.Value))
                     try {
@@ -227,8 +227,8 @@ namespace Snake_game {
             if (foodSectionData != null) {
                 KeyDataCollection foodKeys = foodSectionData.Keys;
 
-                KeyData foodColor = foodKeys.GetKeyData(@"FoodColorRGB");
-                KeyData foodScore = foodKeys.GetKeyData(@"FoodScore");
+                KeyData foodColor = foodKeys.GetKeyData(FOOD_COLOR_KEY);
+                KeyData foodScore = foodKeys.GetKeyData(FOOD_SCORE_KEY);
 
                 if (!string.IsNullOrEmpty(foodColor?.Value))
                     try {
@@ -252,7 +252,7 @@ namespace Snake_game {
             if (scoreSectionData != null) {
                 KeyDataCollection scoreKeys = scoreSectionData.Keys;
 
-                KeyData maxScore = scoreKeys.GetKeyData(@"MaxScore");
+                KeyData maxScore = scoreKeys.GetKeyData(MAX_SCORE_KEY);
 
                 if (!string.IsNullOrEmpty(maxScore?.Value))
                     try {
@@ -400,20 +400,20 @@ namespace Snake_game {
             SectionDataCollection sectionDataCollection = new SectionDataCollection();
             
             SectionData playfieldSectionData = new SectionData(@"PLAYFIELD");
-            KeyData cellSize = new KeyData(@"CellSize") {
+            KeyData cellSize = new KeyData(CELL_SIZE_KEY) {
                 Value = CellSize.ToString(),
                 Comments = new List<string> {
                     @"Size of a cell.",
                     $"Must be divisible by {PLAYFIELD_WIDTH} (width) and {PLAYFIELD_HEIGHT} (height)."
                 }
             };
-            KeyData backColor = new KeyData(@"BackgroundColorRGB") {
+            KeyData backColor = new KeyData(BACKCOLOR_KEY) {
                 Value = Helpers.ToRgbString(CellColor, @", "),
                 Comments = new List<string> {
                     @"Background color in RGB format."
                 }
             };
-            KeyData updateInterval = new KeyData(@"UpdateInterval") {
+            KeyData updateInterval = new KeyData(UPDATE_INTERVAL_KEY) {
                 Value = UpdateInterval.ToString(),
                 Comments = new List<string> {
                     @"The time (in milliseconds) between each time the snake moves.",
@@ -423,39 +423,39 @@ namespace Snake_game {
             Helpers.AddKeysToSection(playfieldSectionData, cellSize, backColor, updateInterval);
 
             SectionData snakeSectionData = new SectionData(@"SNAKE");
-            KeyData headColor = new KeyData(@"HeadColorRGB") {
+            KeyData headColor = new KeyData(HEAD_COLOR_KEY) {
                 Value = Helpers.ToRgbString(SnakeHeadColor, @", "),
                 Comments = new List<string> {
                     @"Color of snake's head in RGB format."
                 }
             };
-            KeyData headLoseColor = new KeyData("HeadLoseColorRGB") {
+            KeyData headLoseColor = new KeyData(HEAD_LOSE_COLOR_KEY) {
                 Value = Helpers.ToRgbString(SnakeHeadLoseColor, @", "),
                 Comments = new List<string> {
                     @"Color of snake's head when lose in RGB format."
                 }
             };
-            KeyData bodyColor = new KeyData(@"BodyColorRGB") {
+            KeyData bodyColor = new KeyData(BODY_COLOR_KEY) {
                 Value = Helpers.ToRgbString(SnakeBodyColor, @", "),
                 Comments = new List<string> {
                     @"Color of snake's body in RGB format."
                 }
             };
-            KeyData defaultLength = new KeyData(@"DefaultLength") {
+            KeyData defaultLength = new KeyData(DEF_LENGTH_KEY) {
                 Value = DefaultSnakeLength.ToString(),
                 Comments = new List<string> {
                     @"Default length of the snake when a new game starts.",
                     @"The value must be greater than 1."
                 }
             };
-            KeyData defaultDirection = new KeyData(@"DefaultDirection") {
+            KeyData defaultDirection = new KeyData(DEF_DIR_KEY) {
                 Value = DefaultSnakeDirection.ToString(),
                 Comments = new List<string> {
                     @"Default moving direction of the snake when a new game starts.",
                     @"The value can only be Up, Down, Left or Right."
                 }
             };
-            KeyData defaultSpawnPoint = new KeyData(@"DefaultSpawnPoint") {
+            KeyData defaultSpawnPoint = new KeyData(DEF_SPAWN_POINT_KEY) {
                 Value = $"{DefaultSnakeLocationX}, {DefaultSnakeLocationY}",
                 Comments = new List<string> {
                     @"Default spawn point (X, Y) of the snake when a new game starts.",
@@ -465,13 +465,13 @@ namespace Snake_game {
             Helpers.AddKeysToSection(snakeSectionData, headColor, headLoseColor, bodyColor, defaultLength, defaultDirection, defaultSpawnPoint);
 
             SectionData foodSectionData = new SectionData(@"FOOD");
-            KeyData foodColor = new KeyData(@"FoodColorRGB") {
+            KeyData foodColor = new KeyData(FOOD_COLOR_KEY) {
                 Value = Helpers.ToRgbString(FoodColor, @", "),
                 Comments = new List<string> {
                     @"Color of food in RGB format."
                 }
             };
-            KeyData foodScore = new KeyData(@"FoodScore") {
+            KeyData foodScore = new KeyData(FOOD_SCORE_KEY) {
                 Value = FoodScore.ToString(),
                 Comments = new List<string> {
                     @"Score to be received after eating food"
@@ -481,7 +481,7 @@ namespace Snake_game {
 
             SectionData scoreSectionData = new SectionData(@"SCORE");
             
-            KeyData maxScore = new KeyData(@"MaxScore") {
+            KeyData maxScore = new KeyData(MAX_SCORE_KEY) {
                 Value = MaxScore.ToString(),
                 Comments = new List<string> {
                     @"Maximum score of the game.",
